@@ -1,0 +1,478 @@
+#if !defined (_SERVO_CON_REMOTE_IDL_2_)
+#define _SERVO_CON_REMOTE_IDL_2_
+
+#include "CosNotification.idl"
+#include "CosNotifyComm.idl" 
+
+module ServoConRemote
+{
+    //(will be) raised if program contains errors    
+    exception SyntaxError{string Text; long Line;};
+    //raised if requested named entity not exists
+    exception NotFound {};
+    //raised if action is impossible/can have unpredicted consequences if machine is not homed
+    //not used yet
+    exception NotHomed {};
+    //generic exception
+    exception Impossible {string why;};
+    //raised if action is performed on non-existent axis
+    exception InvalidAxis {};
+    //raised if action execution caused error
+    exception CNCError{string Message;};
+    
+    //waiting for long process - pull model
+    
+    interface LongProcess
+    {
+        //unknown means completed but status could not be retrieved
+        enum Status {InProgress, Done, Error, Unknown};
+        readonly attribute Status Completed;
+        //message is empty on success
+        readonly attribute string Message;
+        readonly attribute double Progress;
+        void Detach();
+    };
+
+    interface IUserParameter
+    {
+        enum Type {BoolType, S32Type, FloatType, StringType};
+        typedef struct _s_Limits{double min; double max;} LimitType;
+        //raised if trying to write to read/only parameter
+        exception IsReadOnly {};
+        //raised if trying to get list of values for non-list parameter
+        exception NotListType {};
+        //erroneus type, cannot convert, outside limits
+        exception InvalidValue {};
+        
+        //text name
+        readonly attribute string Name;
+        readonly attribute string Hint;
+        readonly attribute LimitType Limits;
+        
+        //get value as string - so as not to meddle with type resolution and lists of values for simple display
+        //returns up to 8 digits after point
+        string GetTextValue();
+        any GetValue();
+        //TODO: check what values 
+        typedef sequence<string> ValueListSeq;
+        //get all possible values
+        ValueListSeq GetValuesList() raises (NotListType);
+        
+        //should recognize text and correct value type for parameter
+        void SetValue(in any val) raises(IsReadOnly, InvalidValue, Impossible);
+        
+        //create Notification Service channel for selected parameter and send change notification from time to time
+        //not implemented yet
+        void StartWatch();
+        //stop updating notification channel, mb destroy the channel
+        void StopWatch();
+    };
+        
+    //low-level, try to avoid
+    interface IAction
+    {
+        void Perform(in any param)raises(Impossible, CNCError);
+        LongProcess PerformLong(in any param)raises(Impossible, CNCError);
+        //do not use!!!
+        void Reset();        //internal - reset internal state
+        void Flush();        //perform all pending operations if any        
+    };
+    
+    //just set of parameters
+    //use with caution - see Integrator's manual
+    interface IHomingParameters
+    {
+        readonly attribute IUserParameter HomePosition;
+        readonly attribute IUserParameter Offset;
+        readonly attribute IUserParameter SearchVelocity;
+        readonly attribute IUserParameter LatchVelocity;
+        readonly attribute IUserParameter UseIndex;
+        readonly attribute IUserParameter IgnoreLimits;
+        readonly attribute IUserParameter HomeSequence;
+    };
+
+    //just set of parameters - most are for diagnostics
+    //use with caution - see Integrator's manual
+    interface IJoint
+    {
+        readonly attribute IUserParameter PositionCommand;
+        readonly attribute IUserParameter PositionFeedback;
+        readonly attribute IUserParameter MaxVelocity;
+        readonly attribute IUserParameter MaxAcceleration;
+        readonly attribute IUserParameter MinLimit;
+        readonly attribute IUserParameter MaxLimit;
+        readonly attribute IUserParameter FollowingError;
+        readonly attribute IUserParameter Backlash;
+        readonly attribute IUserParameter Enabled;
+        readonly attribute IUserParameter Faulted;
+        readonly attribute IUserParameter MinHWLimit;
+        readonly attribute IUserParameter MaxHWLimit;
+        readonly attribute IHomingParameters Homing;
+    };
+    
+    //operations on motion program
+    interface IMotionProgram
+    {    
+        //mb scales (spindle too) should be in ICNC
+        readonly attribute IUserParameter FeedScale;
+        readonly attribute IUserParameter TraverseScale;
+        
+        typedef sequence<string> ProgramSeq;
+        //get list of all available programs
+        ProgramSeq GetPrograms();
+        //mounts remote dir (smb share)
+        void MountShared(in string path, in string user, in string password);
+        void UnMountShared();
+        
+        //get program text for preview/editing
+        //NOTE: may have \r\n inside
+        string GetProgramText(in string name) raises (NotFound);
+        //delete program
+        //NOTE: already open program can be deleted but will still run until another program is opened
+        void DeleteProgram(in string name) raises (NotFound);
+        //create program on CNC disk, overwriting existing
+        void Upload(in string name, in string data);
+
+        //Auto loader - loads from file on CNC disk
+        //prepare to load program from selected file, not needed for manual load control
+        void Open(in string path)raises(NotFound, SyntaxError, Impossible);
+        //starts loading and executing program from line
+        //if shouldResume is set do return to trajectory 
+        //(rapid to position where motion was stopped, then restore previous codes and continue),
+        //process completes when program stops
+        //WARNING: can have unpredicted consequences if line is not the same where motion 
+        LongProcess StartLoad(in long line, in long shouldResume, in long isDryRun) raises(CNCError, Impossible);
+        //stops execution allowing restart
+        void StopLoad();
+        LongProcess GoToLineStart(in long lineTo, in long backwards) raises(CNCError, Impossible);
+        
+        void StartTrace(in long line);
+        void StopTrace();
+        
+        void TraceForward();
+        void TraceBackward();
+        
+        long CanResume();
+        
+        //number of lines in current program
+        long Length();        
+        //index of currently executing line (test how comments are handled!)
+        long GetCurrentLineIndex();
+        //index of line where program was stopped (TEST!)
+        //use only after StopLoad() and LongProcess returned from StartLoad() returns Done
+        long GetPausedLineIndex();        
+        //one string from loaded program (mb not needed)
+        string GetLine(in long index);
+        
+        //Manuaal Loader
+        void Reset();
+        //load single line for execution
+        //typedef struct _s_Line{string line; long last;} LineData;
+        long FeedLine(in string line);
+        //start execution
+        void Start() raises(CNCError);
+        void Stop();
+        void Pause();
+        void Step() raises(CNCError);        
+    };
+
+    interface ISpindle
+    {
+        //only in manual mode
+        //not implemented yet
+        void TurnOn() raises (CNCError);
+        void TurnOff() raises (CNCError);
+        
+        readonly attribute IUserParameter SpeedCommand;
+        readonly attribute IUserParameter SpeedFeedback;
+        readonly attribute IUserParameter Scale;
+    };
+
+    //exception Disconnected {};
+
+    //not needed - remove
+    interface CNCMessageConsumer 
+    {
+        void push_structured_event(in CosNotification::StructuredEvent notification); 
+        void disconnect_push_consumer();
+    };
+
+    //not needed - remove
+    interface HMICMessageConsumer 
+    {
+        void push_structured_event(in CosNotification::StructuredEvent notification); 
+        void disconnect_push_consumer();
+    };
+
+    //internal - do not use
+    interface CNCMessageSupplier 
+    {
+        void disconnect_push_supplier();
+    };
+    
+    struct Position
+    {
+        double X;
+        double Y;
+        double Z;
+        double A;
+        double B;
+        double C;
+        double U;
+        double V;
+        double W;
+    };
+    
+    enum MotionType {LinearMotionType, ArcMotionType, ProgramStartType};
+    enum MotionPlane {XY, XZ, YZ};
+    
+    typedef struct _s_LinearMotion
+    {
+        Position End;
+    }LinearMotion;
+    
+    typedef sequence<LinearMotion> LinearMotionSeq;
+    
+    typedef struct _s_ArcMotion
+    {
+        Position End;
+        Position Center;
+        MotionPlane Plane;
+    }ArcMotion;
+        
+    typedef struct _s_MotionInfo
+    {
+        long Id;
+    }MotionInfo;
+    
+    interface IOffsets
+    {
+        //get current offset index
+        long Current();
+        //set offset index (equivalent to ExecuteCommand("G<54-59.3>"))
+        void Select(in long num) raises (NotFound, CNCError);
+        
+        //to set current offset on single axis use
+        //Position p = cnc->GetMachinePosition()
+        //p.Y -= pos;
+        //offsets->Set(offsets->Current(), p);
+        Position Get(in long index) raises (NotFound);
+        void Set(in long index, in Position disp) raises (NotFound, CNCError);
+        void SetG28(in Position disp) raises (CNCError);
+        void SetG30(in Position disp) raises (CNCError);
+    };
+    
+    //realtime watch - no more than 4 params at once
+    interface IScopeChannel
+    {
+        typedef sequence<any> Points;
+        typedef struct _s_data{long timestamp; Points data;} Data;
+        
+        Data GetGathered();
+        void ClearGathered();
+    };
+    
+    interface IScope
+    {
+        exception NotGatherable{};
+        exception TooManyChannels{};
+        
+        IScopeChannel AddChannel(in string name) raises(NotFound, TooManyChannels, NotGatherable);
+        void RemoveChannel (in IScopeChannel channel);
+        
+        void Start();
+        void Stop();    
+        
+        //TODO: needed interface for getting actual values of multiple real-time parameters 
+        //smth like
+        //typedef sequence<RTWatch> Params;
+        //Data GetActualValues(in Params);
+    };
+    
+    //front panel HW interface
+    interface IHMIC
+    {
+        typedef octet _a_Extra[80];
+        struct DeviceDescriptor{long writeCount;long password;long deviceType;long deviceId;long manufDate;long manufTime;_a_Extra extra;};
+        struct HMICMessage{long key; long pressed;};
+        struct AutorepeatSettings{long startDelay; long repeatDelay;};
+        void Print(in string data);
+        void Clear();
+        void SetLed(in long led, in long state);
+        void SetAutorepeat(in AutorepeatSettings sett);
+        AutorepeatSettings GetAutorepeat();
+        LongProcess Update() raises(Impossible);
+        DeviceDescriptor GetDeviceDescriptor();
+        void SetDeviceDescriptor(in DeviceDescriptor data);
+        string GetVersion();
+    };
+    
+    interface IConfiguration
+    {
+        struct NetworkSettings
+        {
+            long manual;
+            string ip;
+            string mask;
+            string gate;
+        };
+        void SetupNetwork(in NetworkSettings params);
+        NetworkSettings GetNetworkSetup();
+        
+        void UpdateFirmware();
+        
+        typedef sequence<string> ConfigSeq;
+        //NOTE: config is binary, (C++) strings are not suitable for binary data
+        typedef sequence<octet> ConfigData;
+        void Upload(in ConfigData data);
+        ConfigData Download();
+        //for initial CNC setup ONLY
+        void UploadDeviceSpecific(in ConfigData data);
+        typedef sequence<string> DeviceSpecificParameterList;
+        readonly attribute DeviceSpecificParameterList DeviceSpecificParameters;
+        void SetDeviceSpecificParameter(in string param, in string value, in long applyAtOnce) raises(NotFound, Impossible);
+        //SYSTEM ONLY
+        void SetDeviceSpecific(in string param, in string value, in long applyAtOnce);
+        string GetDeviceSpecificParameter(in string param) raises(NotFound);
+        void Apply();
+        //get config names from usb disk
+        ConfigSeq GetConfigs() raises (NotFound);
+        //config is imported with Action('ImportConfig').Perform(path)
+        void ExportAs(in string path);
+        void ImportAs(in string path);
+    };
+    
+    interface ITools
+    {
+        typedef struct _s_tool
+        {
+            long number;
+            long pocket;
+            double lengthX;
+            double lengthZ;
+            double diameter;
+        } Tool;
+        
+        typedef sequence<Tool> Tools;
+        
+        Tools GetTools();
+        void SetTool(in long index, in Tool data);
+    };
+    
+    interface ILocale
+    {        
+        typedef sequence<string> LocaleList;
+        LocaleList GetAvailable();
+        string GetCurrent();
+        string GetInternalName(in string locale) raises (NotFound);
+        void Set(in string locale) raises (NotFound);
+    };
+    
+
+    interface IDrive
+    {
+        string Name();
+        void Mount();
+        void Unmount();
+        typedef sequence<string> FileSeq;
+        FileSeq GetFileList();
+        FileSeq GetFileListEx(in string ext);
+        //copy to user-defined path on device
+        void CopyFile(in IDrive from, in string name) raises (NotFound);
+        void DeleteFile(in string name) raises (NotFound);
+        //get full content
+        string GetFileContent(in string name) raises (NotFound);
+        //get line
+        string GetFileLine(in string name, in long line) raises (NotFound);
+    };
+
+    interface IStorage
+    {    
+        typedef sequence<IDrive> DriveSeq;
+        DriveSeq GetDrives();
+        typedef sequence<string> FormatSeq;
+        FormatSeq GetSupportedTypes();
+    };
+        
+    interface ICNC : CNCMessageSupplier
+    {
+        //not used yet - will be removed (use Impossible!)
+        exception InvalidMode{};
+        //not used yet
+        exception InvalidState{};
+
+        enum CNCState{On, EStop, Reset};
+
+        typedef sequence<long> GCodesState;
+        typedef sequence<long> MCodesState;
+        
+        //to reload cnc - all references will become invalid!
+        void Restart();
+        
+        GCodesState GetActiveGCodes();
+        MCodesState GetActiveMCodes();
+        
+        void TurnOn()raises(CNCError);
+        void TurnOff()raises(CNCError);
+        void ToggleState()raises(CNCError);
+                
+        LongProcess StartHoming() raises (CNCError);
+        //FIXME: ExecuteCommand process may sometimes be signalled done before command is actually completed 
+        LongProcess ExecuteCommand(in string command) raises(CNCError);
+        
+        readonly attribute IUserParameter State;
+        
+        Position GetPartPosition();
+        Position GetMachinePosition();
+        Position GetPositionError();
+        
+        //stub - doesn't work yet
+        IJoint Joint(in long num)  raises(InvalidAxis);
+        //handles execution of programs (AUTO mode)
+        readonly attribute IMotionProgram MotionProgram;
+        //handles import/export
+        readonly attribute IConfiguration Configuration;
+        readonly attribute IHMIC HMIC;
+        readonly attribute IScope Scope;
+        readonly attribute ITools Tools;
+        readonly attribute IOffsets Offsets;
+        readonly attribute ILocale Locale;
+        readonly attribute IStorage Storage;
+        
+        //low-level
+        IUserParameter Parameter(in string name) raises (NotFound);
+        IUserParameter CreateParameter(in string name, in IUserParameter::Type type);
+        IUserParameter CreatePersistent(in string name, in IUserParameter::Type type);
+        //low-level - avoid if possible!!!
+        IAction Action(in string name) raises (NotFound);
+        
+        void StartSelfTest();
+    };
+    
+    //hmi interface
+    //plcs should use these interfaces to let user adjust parameters
+    
+    interface IDiagScreen
+    {
+        //adds parameter to screen
+        //note: plc HAL parameters are precreated
+        //if you want to create params using CreateParameter() and CreatePersistent() do not forget to periodically read their values from ICNC
+        //as they may be changed by user
+        void AddParameter(in string display, in long len, in IUserParameter param);
+    };
+    
+    interface IDiagnostics
+    {
+        //finds screen by name
+        IDiagScreen GetScreen(in string name) raises(NotFound);
+        //adds new screen, if exists returns reference to existing screen
+        IDiagScreen CreateScreen(in string name);
+    
+    };
+    
+    interface IHMI
+    {
+        readonly attribute IDiagnostics Diagnostics;
+    };
+};
+#endif

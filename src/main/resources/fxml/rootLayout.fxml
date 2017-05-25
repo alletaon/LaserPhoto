@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.input.KeyCodeCombination?>
+
+<?import javafx.scene.shape.Line?>
+<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.131" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.karev.kvantron.controllers.RootLayoutController">
+    <children>
+        <MenuBar VBox.vgrow="NEVER">
+            <menus>
+                <Menu mnemonicParsing="false" text="Файл">
+                    <items>
+                        <MenuItem fx:id="newProject" mnemonicParsing="false" onAction="#handleNew" text="Новый">
+                            <accelerator>
+                                <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP"
+                                                    shortcut="UP"/>
+                            </accelerator>
+                        </MenuItem>
+                        <MenuItem fx:id="openProject" mnemonicParsing="false" onAction="#handleOpen" text="Открыть...">
+                            <accelerator>
+                                <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP"
+                                                    shortcut="UP"/>
+                            </accelerator>
+                        </MenuItem>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem fx:id="save" mnemonicParsing="false" onAction="#handleSave" text="Сохранить">
+                            <accelerator>
+                                <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP"
+                                                    shortcut="UP"/>
+                            </accelerator>
+                        </MenuItem>
+                        <MenuItem fx:id="saveAs" mnemonicParsing="false" onAction="#handleSaveAs"
+                                  text="Сохранить как..."/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem fx:id="settings" mnemonicParsing="false" onAction="#handleSettings"
+                                  text="Настройки…"/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#handleExit" text="Выход"/>
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Справка">
+                    <items>
+                        <MenuItem fx:id="about" mnemonicParsing="false" onAction="#handleAbout" text="О программе"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <TabPane minHeight="553.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+            <tabs>
+                <Tab text="ПРОГРАММА">
+                    <content>
+                        <AnchorPane>
+                            <children>
+                                <Separator prefWidth="200.0" AnchorPane.bottomAnchor="55.0" AnchorPane.leftAnchor="0.0"
+                                           AnchorPane.rightAnchor="0.0"/>
+                                <ScrollPane fx:id="preview" layoutX="210.0" layoutY="30.0"
+                                            AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="210.0"
+                                            AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0">
+                                    <content>
+                                        <AnchorPane>
+                                            <children>
+                                                <Rectangle fx:id="glassPreview" arcHeight="5.0" arcWidth="5.0"
+                                                           fill="#c5dbee" stroke="BLACK" strokeType="INSIDE"
+                                                           AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                                                <Rectangle fx:id="yzPreview" arcHeight="5.0" arcWidth="5.0"
+                                                           fill="darkgray" stroke="black" strokeType="INSIDE"
+                                                           AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0"
+                                                           visible="false"/>
+                                                <ImageView fx:id="picturePreview" pickOnBounds="true"
+                                                           preserveRatio="true"/>
+                                                <Line fx:id="toStartLine" visible="false" stroke="red"/>
+                                                <Line fx:id="toZeroLine" visible="false" stroke="blue"/>
+                                                <Rectangle fx:id="progressArea" visible="false" arcHeight="5.0"
+                                                           arcWidth="5.0" fill="green" stroke="black"
+                                                           strokeType="INSIDE" opacity="0.5"/>
+                                            </children>
+                                        </AnchorPane>
+                                    </content>
+                                </ScrollPane>
+                                <ButtonBar buttonOrder="L_E+U+FBXI_YNOCAH_R" prefHeight="50.0" prefWidth="362.0"
+                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
+                                    <buttons>
+                                        <Button onAction="#handleStart" mnemonicParsing="false" prefHeight="50.0" prefWidth="85.0"
+                                                text="СТАРТ"/>
+                                        <Button onAction="#handleStop" mnemonicParsing="false" prefHeight="50.0" text="СТОП"/>
+                                        <Button onAction="#handlePause" mnemonicParsing="false" prefHeight="50.0" prefWidth="100.0"
+                                                text="ПАУЗА"/>
+                                    </buttons>
+                                    <padding>
+                                        <Insets right="50.0"/>
+                                    </padding>
+                                </ButtonBar>
+                                <VBox prefHeight="522.0" prefWidth="195.0" spacing="5.0" AnchorPane.bottomAnchor="65.0"
+                                      AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <Label text="Размеры стекла:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <GridPane>
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                            </rowConstraints>
+                                            <children>
+                                                <Label text="Длина"/>
+                                                <Label text="Ширина" GridPane.rowIndex="1"/>
+                                                <Label text="Толщина" GridPane.rowIndex="2"/>
+                                                <TextField fx:id="glassLength" GridPane.columnIndex="1"/>
+                                                <TextField fx:id="glassWidth" GridPane.columnIndex="1"
+                                                           GridPane.rowIndex="1"/>
+                                                <TextField fx:id="glassThickness" GridPane.columnIndex="1"
+                                                           GridPane.rowIndex="2"/>
+                                            </children>
+                                            <opaqueInsets>
+                                                <Insets/>
+                                            </opaqueInsets>
+                                        </GridPane>
+                                        <Label text="Файлы:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <ListView fx:id="pictures" prefHeight="135.0" prefWidth="195.0"/>
+                                        <ButtonBar prefHeight="40.0" prefWidth="200.0">
+                                            <buttons>
+                                                <Button mnemonicParsing="false" onAction="#handleAdd" text="Добавить"/>
+                                                <Button mnemonicParsing="false" onAction="#handleDelete"
+                                                        text="Удалить"/>
+                                            </buttons>
+                                        </ButtonBar>
+                                        <Label text="Параметры обработки:">
+                                            <font>
+                                                <Font size="14.0"/>
+                                            </font>
+                                        </Label>
+                                        <GridPane>
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                                            </rowConstraints>
+                                            <children>
+                                                <Label text="Высота по Z"/>
+                                                <Label text="Отступ по X" GridPane.rowIndex="1"/>
+                                                <Label text="Отступ по Y" GridPane.rowIndex="2"/>
+                                                <TextField fx:id="height" disable="true" GridPane.columnIndex="1"/>
+                                                <TextField fx:id="offsetX" disable="true" GridPane.columnIndex="1"
+                                                           GridPane.rowIndex="1"/>
+                                                <TextField fx:id="offsetY" disable="true" GridPane.columnIndex="1"
+                                                           GridPane.rowIndex="2"/>
+                                            </children>
+                                            <opaqueInsets>
+                                                <Insets/>
+                                            </opaqueInsets>
+                                        </GridPane>
+                                    </children>
+                                </VBox>
+                                <Separator orientation="VERTICAL" prefHeight="200.0" AnchorPane.bottomAnchor="57.0"
+                                           AnchorPane.leftAnchor="205.0" AnchorPane.topAnchor="0.0"/>
+                                <Label fx:id="previewInfo" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="550.0"
+                                       text="Предпросмотр:" AnchorPane.leftAnchor="210.0" AnchorPane.topAnchor="0.0">
+                                    <font>
+                                        <Font size="14.0"/>
+                                    </font>
+                                </Label>
+                                <ComboBox fx:id="plane" layoutX="475.0" layoutY="2.0" prefWidth="70.0" promptText="ВИД"
+                                          AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0"/>
+                                <Separator layoutX="298.0" layoutY="24.0" prefWidth="200.0"
+                                           AnchorPane.leftAnchor="207.0" AnchorPane.rightAnchor="0.0"
+                                           AnchorPane.topAnchor="27.0"/>
+                                <ComboBox fx:id="scale" layoutX="591.0" layoutY="2.0" prefWidth="100.0"
+                                          AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="0.0"/>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="УПРАВЛЕНИЕ">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="493.0" prefWidth="200.0">
+                            <children>
+                                <GridPane hgap="15.0" vgap="20.0" AnchorPane.leftAnchor="0.0"
+                                          AnchorPane.topAnchor="0.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" prefWidth="50.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="20.0"/>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0"/>
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES"/>
+                                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES"/>
+                                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES"/>
+                                        <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="SOMETIMES"/>
+                                    </rowConstraints>
+                                    <children>
+                                        <Label text="X">
+                                            <font>
+                                                <Font size="36.0"/>
+                                            </font>
+                                        </Label>
+                                        <Label text="Y" GridPane.rowIndex="1">
+                                            <font>
+                                                <Font size="36.0"/>
+                                            </font>
+                                        </Label>
+                                        <Label text="Z" GridPane.rowIndex="2">
+                                            <font>
+                                                <Font size="36.0"/>
+                                            </font>
+                                        </Label>
+                                        <Label text="999.999" GridPane.columnIndex="1" fx:id="xPosition">
+                                            <font>
+                                                <Font size="36.0"/>
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="yPosition" text="999.999" GridPane.columnIndex="1"
+                                               GridPane.rowIndex="1">
+                                            <font>
+                                                <Font size="36.0"/>
+                                            </font>
+                                        </Label>
+                                        <Label fx:id="zPosition" text="999.999" GridPane.columnIndex="1"
+                                               GridPane.rowIndex="2">
+                                            <font>
+                                                <Font size="36.0"/>
+                                            </font>
+                                        </Label>
+                                        <Button fx:id="yPlus" mnemonicParsing="false" onMousePressed="#yPlusHandle"
+                                                onMouseReleased="#jogStop" prefHeight="50.0" prefWidth="50.0" text="Y+"
+                                                GridPane.columnIndex="4"/>
+                                        <Button fx:id="yMinus" mnemonicParsing="false" onMousePressed="#yMinusHandle"
+                                                onMouseReleased="#jogStop" prefHeight="50.0" prefWidth="50.0" text="Y-"
+                                                GridPane.columnIndex="4" GridPane.rowIndex="2"/>
+                                        <Button mnemonicParsing="false" onMousePressed="#xPlusHandle"
+                                                onMouseReleased="#jogStop" prefHeight="50.0" prefWidth="50.0" text="X+"
+                                                GridPane.columnIndex="5" GridPane.rowIndex="1" fx:id="xPlus"/>
+                                        <Button mnemonicParsing="false" onMousePressed="#xMinusHandle"
+                                                onMouseReleased="#jogStop" prefHeight="50.0" prefWidth="50.0" text="X-"
+                                                GridPane.columnIndex="3" GridPane.rowIndex="1" fx:id="xMinus"/>
+                                        <Button fx:id="zPlus" mnemonicParsing="false" onMousePressed="#zPlusHandle"
+                                                onMouseReleased="#jogStop" prefHeight="50.0" prefWidth="50.0" text="Z+"
+                                                GridPane.columnIndex="7"/>
+                                        <Button fx:id="zMinus" mnemonicParsing="false" onMousePressed="#zMinusHandle"
+                                                onMouseReleased="#jogStop" prefHeight="50.0" prefWidth="50.0" text="Z-"
+                                                GridPane.columnIndex="7" GridPane.rowIndex="2"/>
+                                        <Slider fx:id="jogVelocity" showTickLabels="true" showTickMarks="true"
+                                                value="50.0" GridPane.columnIndex="2" GridPane.columnSpan="2147483647"
+                                                GridPane.rowIndex="3"/>
+                                        <Label alignment="CENTER_RIGHT" prefHeight="50.0" prefWidth="200.0"
+                                               text="V, мм/с:" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                            <font>
+                                                <Font size="24.0"/>
+                                            </font>
+                                        </Label>
+                                    </children>
+                                    <opaqueInsets>
+                                        <Insets/>
+                                    </opaqueInsets>
+                                    <padding>
+                                        <Insets left="20.0" top="30.0"/>
+                                    </padding>
+                                </GridPane>
+                                <ButtonBar buttonOrder="L_E+U+FBXI_YNOCAH_R" prefHeight="50.0"
+                                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
+                                    <buttons>
+                                        <Button fx:id="cncOnOff" mnemonicParsing="false" onAction="#onOffHandle"
+                                                prefHeight="50.0" prefWidth="100.0" text="ЧПУ ВКЛ."/>
+                                        <Button fx:id="toHome" mnemonicParsing="false" onAction="#toHomeHandle"
+                                                prefHeight="50.0" prefWidth="85.0" text="ДОМОЙ"/>
+                                        <Button fx:id="toZero" mnemonicParsing="false" onAction="#toZeroHandle"
+                                                prefHeight="50.0" prefWidth="100.0" text="В НОЛЬ"/>
+                                        <Button fx:id="laserOnOff" mnemonicParsing="false" onAction="#laserOnOffHandle"
+                                                prefHeight="50.0" prefWidth="100.0" text="ЛАЗЕР ВКЛ."/>
+                                    </buttons>
+                                    <padding>
+                                        <Insets right="50.0"/>
+                                    </padding>
+                                </ButtonBar>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+        <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+            <children>
+                <Label fx:id="cncConnect" maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="Left status"
+                       HBox.hgrow="ALWAYS">
+                    <font>
+                        <Font size="11.0" fx:id="x3"/>
+                    </font>
+                    <textFill>
+                        <Color blue="0.625" green="0.625" red="0.625" fx:id="x4"/>
+                    </textFill>
+                </Label>
+                <Pane prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS"/>
+                <Label fx:id="cncState" font="$x3" maxWidth="-1.0" text="Right status" textFill="$x4"
+                       HBox.hgrow="NEVER"/>
+            </children>
+            <padding>
+                <Insets bottom="3.0" left="3.0" right="3.0" top="3.0"/>
+            </padding>
+        </HBox>
+    </children>
+    <stylesheets>
+        <URL value="@/fxml/rootLayout.css"/>
+    </stylesheets>
+</VBox>

@@ -6,7 +6,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.DialogPane;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
@@ -27,7 +26,7 @@ public class Main extends Application {
     private RootLayoutController rootLayoutController;
 
     public static void main(String[] args) {
-        LauncherImpl.launchApplication(Main.class, appPreloader.class, args);
+        LauncherImpl.launchApplication(Main.class, AppPreloader.class, args);
 //        launch(args);
     }
 

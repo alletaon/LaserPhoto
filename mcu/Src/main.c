@@ -75,8 +75,11 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	uint8_t UserBuffer[64];
 	uint32_t Len = 64;
+	uint8_t rxBuffer[Len];
+	uint8_t txBuffer[8];
+	uint8_t string[2048];
+	uint32_t stringCount = 0;
 	uint8_t cmd = 0;
 	enum{LED2_ON = 1, LED2_OFF = 2, LED3_ON = 3, LED3_OFF = 4, LED4_ON = 5, LED4_OFF = 6};
 //	int32_t encCount = 0;
@@ -93,25 +96,29 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
-  MX_CRC_Init();
-//  MX_TIM8_Init();
+//  MX_CRC_Init();
+ // MX_TIM8_Init();
 
   /* USER CODE BEGIN 2 */
 	HAL_Delay(1000);
 //	HAL_TIM_Encoder_Start(&htim8, TIM_CHANNEL_ALL);
 	
 	/*##-1- Configure the CRC peripheral #######################################*/
-	crcHandle.Instance = CRC;
-	if (HAL_CRC_Init(&crcHandle) != HAL_OK)
-  {
+//	crcHandle.Instance = CRC;
+//	if (HAL_CRC_Init(&crcHandle) != HAL_OK)
+//  {
     /* Initialization Error */
-    Error_Handler();
-  }
+//    Error_Handler();
+//  }
 	
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    txBuffer[i] = i;
+  }
   while (1)
   {
 //		CDC_Transmit_FS((uint8_t*)&UserBuffer, sizeof(UserBuffer));
@@ -147,14 +154,42 @@ int main(void)
 //		HAL_Delay(1000);
 		
 		//encCount = TIM8->CNT;
-		CDC_Transmit_FS((uint8_t*)&UserBuffer, sizeof(UserBuffer));
-		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
-		HAL_Delay(100);
-		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
-		USBD_Interface_fops_FS.Receive((uint8_t*)&UserBuffer, &Len);
-		HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);
-		HAL_Delay(100);
-		HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET);
+
+		if(USBD_Interface_fops_FS.Receive(rxBuffer, &Len) == USBD_OK){
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
+			HAL_Delay(100);
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+		}
+		if(rxBuffer[0] != 0) {
+			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+			HAL_Delay(100);
+			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+			switch (rxBuffer[0]) {
+				case 1:
+					//get string
+					stringCount = rxBuffer[1];
+					for(int i = 0; i < stringCount / 64; i++) {
+						CDC_Transmit_FS(txBuffer, sizeof(txBuffer));
+						USBD_Interface_fops_FS.Receive(rxBuffer, &Len);	
+					}
+					break;
+				case 2:
+					//get pacetge
+					
+					break;
+				case 3:
+					break;
+				case 4:
+					break;
+			}
+			if(CDC_Transmit_FS(txBuffer, sizeof(txBuffer)) == USBD_OK) {
+				HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);
+				HAL_Delay(100);
+				HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET);
+			}
+			rxBuffer[0] = 0;
+		}
+
 		HAL_Delay(100);
 		
   /* USER CODE END WHILE */

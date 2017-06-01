@@ -634,11 +634,14 @@ public class RootLayoutController implements Initializable {
         imageDir = FileUtil.createSubDir(workDir, "images");
 
         glass = new Glass();
-
-        pictures.getItems().clear();
+        if (pictures.getItems() != null) {
+            pictures.getItems().clear();
+        }
+        if (picturesList.getPictures() != null) {
+            picturesList.getPictures().clear();
+        }
 
         savedFile = null;
-
     }
 
     @FXML
@@ -759,57 +762,61 @@ public class RootLayoutController implements Initializable {
     private void handleStart() {
         picturesList.setPictures(pictures.getItems());
         picturesList.sort();
-        Task<Void> porgamTask = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                AnchorPane view = (AnchorPane) preview.getContent();
-                for (Picture picture : pictures.getItems()) {
-                    System.out.println(picture.getHeight());
-                    Platform.runLater(() -> pictures.getSelectionModel().select(picture));
-                    double xStart = (picture.getStartX() + picture.getOffsetX() / settingModel.getStepX()) * scaleValue.get();
-                    double yStart = (picture.getStartY() + picture.getOffsetY() / settingModel.getStepY()) * scaleValue.get();
-                    Line toStart = new Line(0.0, 0.0, xStart, yStart);
-                    toStart.setStroke(Color.RED);
-                    Platform.runLater(() -> view.getChildren().add(toStart));
-                    double xStartMm = picture.getStartX() * settingModel.getStepX() + picture.getOffsetX();
-                    double xEndMm = picture.getEndX() * settingModel.getStepX() + picture.getOffsetX();
-                    double yStartMm = picture.getStartY() * settingModel.getStepY() + picture.getOffsetY();
-                    servocon.goToPoint(xStartMm, yStartMm);
-                    double width = (picture.getEndX() - picture.getStartX()) * scaleValue.get();
-                    Rectangle workArea = new Rectangle(xStart, yStart, width, 0.0);
-                    workArea.setFill(Color.GREEN);
-                    workArea.setOpacity(0.5);
-                    Platform.runLater(() -> view.getChildren().add(workArea));
-                    int count = picture.getEndY() - picture.getStartY();
-                    for (int i = 1; i <= count; i++) {
-                        if (i % 2 == 0) {
-                            servocon.goToX(xEndMm);
-                        } else {
-                            servocon.goToX(xStartMm);
-                        }
-                        workArea.setHeight(i * scaleValue.get());
-                        System.out.print(i + " ");
-                        servocon.goToY(yStartMm + i * settingModel.getStepY());
-                    }
-                    System.out.println();
-                    double xEnd;
-                    if (count % 2 == 0) {
-                        xEnd = xStart;
-                    } else {
-                        xEnd = (picture.getEndX() + picture.getOffsetX() / settingModel.getStepX()) * scaleValue.get();
-                    }
-                    double yEnd = (picture.getEndY() + picture.getOffsetY() / settingModel.getStepY()) * scaleValue.get();
-                    Line toZero = new Line(xEnd, yEnd, 0.0, 0.0);
-                    toStart.setStroke(Color.BLUE);
-                    Platform.runLater(() -> view.getChildren().add(toZero));
-                    Platform.runLater(() -> view.getChildren().remove(toStart));
-                    Platform.runLater(() -> view.getChildren().remove(workArea));
-                    Platform.runLater(() -> view.getChildren().remove(toZero));
-                }
-                return null;
-            }
-        };
-        new Thread(porgamTask).start();
+//        Task<Void> porgamTask = new Task<Void>() {
+//            @Override
+//            protected Void call() throws Exception {
+//                AnchorPane view = (AnchorPane) preview.getContent();
+//                for (Picture picture : pictures.getItems()) {
+//                    System.out.println(picture.getHeight());
+//                    Platform.runLater(() -> pictures.getSelectionModel().select(picture));
+//                    double xStart = (picture.getStartX() + picture.getOffsetX() / settingModel.getStepX()) * scaleValue.get();
+//                    double yStart = (picture.getStartY() + picture.getOffsetY() / settingModel.getStepY()) * scaleValue.get();
+//                    Line toStart = new Line(0.0, 0.0, xStart, yStart);
+//                    toStart.setStroke(Color.RED);
+//                    Platform.runLater(() -> view.getChildren().add(toStart));
+//                    double xStartMm = picture.getStartX() * settingModel.getStepX() + picture.getOffsetX();
+//                    double xEndMm = picture.getEndX() * settingModel.getStepX() + picture.getOffsetX();
+//                    double yStartMm = picture.getStartY() * settingModel.getStepY() + picture.getOffsetY();
+//                    servocon.goToPoint(xStartMm, yStartMm);
+//                    double width = (picture.getEndX() - picture.getStartX()) * scaleValue.get();
+//                    Rectangle workArea = new Rectangle(xStart, yStart, width, 0.0);
+//                    workArea.setFill(Color.GREEN);
+//                    workArea.setOpacity(0.5);
+//                    Platform.runLater(() -> view.getChildren().add(workArea));
+//                    int count = picture.getEndY() - picture.getStartY();
+//                    for (int i = 1; i <= count; i++) {
+//                        if (i % 2 == 0) {
+//                            servocon.goToX(xEndMm);
+//                        } else {
+//                            servocon.goToX(xStartMm);
+//                        }
+//                        workArea.setHeight(i * scaleValue.get());
+//                        System.out.print(i + " ");
+//                        servocon.goToY(yStartMm + i * settingModel.getStepY());
+//                    }
+//                    System.out.println();
+//                    double xEnd;
+//                    if (count % 2 == 0) {
+//                        xEnd = xStart;
+//                    } else {
+//                        xEnd = (picture.getEndX() + picture.getOffsetX() / settingModel.getStepX()) * scaleValue.get();
+//                    }
+//                    double yEnd = (picture.getEndY() + picture.getOffsetY() / settingModel.getStepY()) * scaleValue.get();
+//                    Line toZero = new Line(xEnd, yEnd, 0.0, 0.0);
+//                    toStart.setStroke(Color.BLUE);
+//                    Platform.runLater(() -> view.getChildren().add(toZero));
+//                    Platform.runLater(() -> view.getChildren().remove(toStart));
+//                    Platform.runLater(() -> view.getChildren().remove(workArea));
+//                    Platform.runLater(() -> view.getChildren().remove(toZero));
+//                }
+//                return null;
+//            }
+//        };
+//        new Thread(porgamTask).start();
+
+        Thread programThread = new Thread(new ProgramTask(), "programThread");
+        programThread.setDaemon(true);
+        programThread.start();
     }
 
     @FXML
@@ -877,7 +884,7 @@ public class RootLayoutController implements Initializable {
 
         @Override
         protected Void call() throws Exception {
-            sortPictures();
+            Platform.runLater(this::sortPictures);
             for (Picture picture : picturesList.getPictures()) {
                 selectPicture(picture);
                 calculateParams(picture);
@@ -885,14 +892,24 @@ public class RootLayoutController implements Initializable {
                 servocon.goToPoint(xStartMm - accPath, yStartMm);
                 servocon.goToZ(picture.getHeight());
                 //здесь нужно послать данные MCU
+                ListSliceWrapper slices = picture.getSlices();
+                //файл 1 из 8 строка 12 из 1100 Время: прошло - ххх, осталось - ххх (yyy)
                 Platform.runLater(this::drawProgressArea);
+                long time;
                 for (int i = 0; i < count; i++) {
+                    slices.getByteArray(i);
+                    time = System.currentTimeMillis();
+                    System.out.println("строка " + (i + 1) + " из " + count);
                     if (i % 2 == 0) {
-                        servocon.goToX(xEndMm + accPath, settingModel.getCncMaxSpeed());
+                        // convert mm/s to mm/min - x * 60
+                        servocon.goToX(xEndMm + accPath, settingModel.getCncMaxSpeed() * 60);
                     } else {
-                        servocon.goToX(xStartMm - accPath, settingModel.getCncMaxSpeed());
+                        servocon.goToX(xStartMm - accPath, settingModel.getCncMaxSpeed() * 60);
                     }
+                    servocon.goToY(yStartMm + i * settingModel.getStepY());
                     progressArea.setHeight(i * scaleValue.get());
+
+                    System.out.println("Время обработки " + (System.currentTimeMillis() - time));
                 }
                 Platform.runLater(this::drawToZeroLine);
                 servocon.goToPoint(0, 0);
@@ -909,14 +926,14 @@ public class RootLayoutController implements Initializable {
 
         private void drawToZeroLine() {
             if (count % 2 == 0) {
-                toStartLine.setStartX(xStartPx);
+                toZeroLine.setStartX(xStartPx);
             } else {
-                toStartLine.setStartX(xEndPx);
+                toZeroLine.setStartX(xEndPx);
             }
-            toStartLine.setStartY(yEndPx);
-            toStartLine.setEndX(0);
-            toStartLine.setEndY(0);
-            toStartLine.setVisible(true);
+            toZeroLine.setStartY(yEndPx);
+            toZeroLine.setEndX(0);
+            toZeroLine.setEndY(0);
+            toZeroLine.setVisible(true);
         }
 
         private void drawProgressArea() {
@@ -936,10 +953,11 @@ public class RootLayoutController implements Initializable {
         }
 
         private void calculateParams(Picture picture) {
-            int startX = picture.getStartX();
-            int startY = picture.getStartY();
-            int endX = picture.getEndX();
-            int endY = picture.getEndY();
+            //TODO: оптимизировать алгоритм расчета этих точек!!!
+            int startX = picture.getxStart();
+            int startY = picture.getyStart();
+            int endX = picture.getxEnd();
+            int endY = picture.getyEnd();
             xStartPx = (startX + picture.getOffsetX() / settingModel.getStepX()) * scaleValue.get();
             xStartMm = startX * settingModel.getStepX() + picture.getOffsetX();
             yStartPx = (startY + picture.getOffsetY() / settingModel.getStepY()) * scaleValue.get();
@@ -951,7 +969,7 @@ public class RootLayoutController implements Initializable {
 
 //          V(t) = a * t, s(t) = a * t^2 / 2
 //          t = v / a, s =  v^2 / 2*a
-            accPath = Math.pow(settingModel.getCncMaxSpeed(), 2) / 2 * settingModel.getCncMaxAcc();
+            accPath = Math.pow(settingModel.getCncMaxSpeed(), 2) / (2 * settingModel.getCncMaxAcc());
 
             count = endY - startY;
 

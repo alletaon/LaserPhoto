@@ -1,16 +1,13 @@
 package com.karev.kvantron.util;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelReader;
-import javafx.scene.image.WritablePixelFormat;
+import com.karev.kvantron.model.Slice;
 
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import java.util.Arrays;
-import java.util.stream.IntStream;
+import java.util.BitSet;
 
+public class BitSetAdapter extends XmlAdapter<String, BitSet> {
 
-public class ImageAdapter extends XmlAdapter<String, Image> {
     /**
      * Convert a value type to a bound type.
      *
@@ -19,8 +16,12 @@ public class ImageAdapter extends XmlAdapter<String, Image> {
      *                   reporting the error to the user through {@link ValidationEventHandler}.
      */
     @Override
-    public Image unmarshal(String v) throws Exception {
-        return null;
+    public BitSet unmarshal(String v) throws Exception {
+        BitSet result = new BitSet();
+        for (String s : v.replaceAll("[{}]", "").split(", ")) {
+            result.set(Integer.parseInt(s));
+        }
+        return result;
     }
 
     /**
@@ -31,7 +32,7 @@ public class ImageAdapter extends XmlAdapter<String, Image> {
      *                   reporting the error to the user through {@link ValidationEventHandler}.
      */
     @Override
-    public String marshal(Image v) throws Exception {
-        return Integer.toString(v.hashCode());
+    public String marshal(BitSet v) throws Exception {
+        return v.toString();
     }
 }
